@@ -176,7 +176,7 @@
 
             notesList.addEventListener('click', function(event) {
                 if (event.target.tagName === 'LI') {
-                    const noteText = event.target.title || event.target.textContent;
+                    const noteText = event.target.dataset.noteText || event.target.textContent;
                     noteInput.value = noteText;
                     updateWordCount();
                 }
@@ -184,7 +184,7 @@
 
             function addNoteToList(noteText) {
                 // Periksa apakah catatan sudah ada di daftar
-                const existingNotes = Array.from(notesList.children).map(li => li.title || li.textContent);
+                const existingNotes = Array.from(notesList.children).map(li => li.dataset.noteText || li.textContent);
                 if (existingNotes.includes(noteText)) {
                     return; // Catatan sudah ada, jangan tambahkan lagi
                 }
@@ -195,6 +195,9 @@
                 const firstLine = noteText.split('\n')[0];
                 const firstFiveWords = firstLine.split(/\s+/).slice(0, 5).join(' ') + (firstLine.split(/\s+/).length > 5 ? '...' : '');
                 li.textContent = firstFiveWords;
+
+                // Simpan teks asli sebagai data attribute
+                li.dataset.noteText = noteText;
 
                 // Jika ada lebih banyak teks, tambahkan tooltip untuk menampilkan seluruh teks
                 if (firstLine !== noteText || firstLine.split(/\s+/).length > 5) {
@@ -216,7 +219,7 @@
 
             function saveNotesToLocalStorage(key = 'defaultKey') {
                 // Collect all notes including the one in the textarea
-                const notes = Array.from(notesList.children).map(li => li.title || li.textContent);
+                const notes = Array.from(notesList.children).map(li => li.dataset.noteText || li.textContent);
                 if (noteInput.value.trim() !== '') {
                     notes.unshift(noteInput.value.trim()); // Add the current note to the top of the array
                 }
