@@ -105,11 +105,6 @@
             color: #6c757d;
             margin-top: 5px;
         }
-
-        #moreNotesButton {
-            margin-top: 10px;
-            display: none; /* Sembunyikan tombol awalnya */
-        }
     </style>
 </head>
 <body>
@@ -122,7 +117,6 @@
         <button id="saveNotesButton">Save Notes</button>
         <button id="loadNotesButton">Load Notes</button>
         <ul id="notesList"></ul>
-        <button id="moreNotesButton">More Notes</button>
     </div>
 
     <script>
@@ -133,11 +127,7 @@
             const newNoteButton = document.getElementById('newNoteButton');
             const saveNotesButton = document.getElementById('saveNotesButton');
             const loadNotesButton = document.getElementById('loadNotesButton');
-            const moreNotesButton = document.getElementById('moreNotesButton');
             const wordCount = document.getElementById('wordCount');
-
-            let displayedNotes = 0; // Jumlah catatan yang sudah ditampilkan
-            const notesPerPage = 5; // Jumlah catatan yang ditampilkan per halaman
 
             function updateWordCount() {
                 const text = noteInput.value.trim();
@@ -172,10 +162,6 @@
             saveNotesButton.addEventListener('click', function() {
                 const key = prompt("Enter a key to save notes:", "defaultKey");
                 if (key) {
-                    // Include the current note in the saved notes
-                    if (noteInput.value.trim() !== '') {
-                        addNoteToList(noteInput.value.trim());
-                    }
                     saveNotesToLocalStorage(key);
                     alert(`Notes saved to local storage with key: ${key}`);
                 }
@@ -188,11 +174,6 @@
                 }
             });
 
-            moreNotesButton.addEventListener('click', function() {
-                displayedNotes += notesPerPage;
-                loadNotesFromStorage(displayedNotes);
-            });
-
             notesList.addEventListener('click', function(event) {
                 if (event.target.tagName === 'LI') {
                     const noteText = event.target.title || event.target.textContent;
@@ -202,6 +183,12 @@
             });
 
             function addNoteToList(noteText) {
+                // Periksa apakah catatan sudah ada di daftar
+                const existingNotes = Array.from(notesList.children).map(li => li.title || li.textContent);
+                if (existingNotes.includes(noteText)) {
+                    return; // Catatan sudah ada, jangan tambahkan lagi
+                }
+
                 const li = document.createElement('li');
                 
                 // Ambil baris pertama dari catatan dan potong menjadi lima kata
@@ -237,23 +224,10 @@
             }
 
             function loadNotes(key = 'defaultKey') {
-                displayedNotes = 0; // Reset jumlah catatan yang ditampilkan
                 const savedNotes = JSON.parse(localStorage.getItem(key)) || [];
                 notesList.innerHTML = ''; // Clear existing notes
-                loadNotesFromStorage(displayedNotes, savedNotes);
-            }
-
-            function loadNotesFromStorage(startIndex = 0, savedNotes = []) {
-                const notesToDisplay = savedNotes.slice(0, startIndex + notesPerPage);
-                notesList.innerHTML = ''; // Clear existing notes
-                notesToDisplay.forEach(noteText => addNoteToList(noteText));
-
-                // Show or hide the "More Notes" button based on the number of notes
-                if (savedNotes.length > startIndex + notesPerPage) {
-                    moreNotesButton.style.display = 'block';
-                } else {
-                    moreNotesButton.style.display = 'none';
-                }
+                // Sort notes by the latest order before displaying
+                savedNotes.reverse().forEach(noteText => addNoteToList(noteText));
             }
         });
     </script>
